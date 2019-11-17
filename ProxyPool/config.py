@@ -1,0 +1,9 @@
+# Redis数据库
+REDIS_HOST = "127.0.0.1"
+REDIS_PORT = 6379
+REDIS_PASSWORD = None
+STABLE_REDIS_KEY = "test"
+
+# 评分机制
+INITIAL_SCORE = 5  # 初始分
+MAX_SCORE = 10  # 最大可及分
