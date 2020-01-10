@@ -1,0 +1,1 @@
+print("Myredis - Hello world!")

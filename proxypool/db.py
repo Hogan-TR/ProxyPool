@@ -42,14 +42,14 @@ class RedisClient(object):
             1(int): 成功添加一条代理信息
             None(NoneType): 代理格式不匹配或此代理已存在数据库
         """
-        if not re.match('\d+\.\d+\.\d+\.\d+\:\d+', proxy):
+        if not re.match('\d+\.\d+\.\d+\.\d+\:\d+', proxy):  # 正则匹配 代理ip
             logger.error('Irregular Format | Proxy - %s', proxy)
             return  # NoneType
-        if not self.db.zscore(table, proxy):
+        if not self.db.zscore(table, proxy):  # 未进入池中
             mapping = {
                 proxy: score,
             }
-            return self.db.zadd(table, mapping)
+            return self.db.zadd(table, mapping)  # 加入池
 
     def increase(self, table, proxy):
         """代理加分
@@ -81,6 +81,7 @@ class RedisClient(object):
             1(int): 删除无效代理
         """
         score = self.db.zscore(table, proxy)
+
         # 稳定代理数据池与临时数据池采取不同处理
         if table == STABLE_REDIS_KEY:
             if score and score > INITIAL_SCORE:
@@ -89,13 +90,9 @@ class RedisClient(object):
                 return self.db.zrem(table, proxy)  # 删除
         else:
             if score and score > MIN_SCORE:
-                # logger.info(
-                #     'Proxy: %s | Current Score: %s | One Point Less', proxy, score)
-                return self.db.zincrby(table, -1, proxy)
+                return self.db.zincrby(table, -1, proxy)  # 减分
             else:
-                # logger.info(
-                #     'Proxy: %s | Current Score: %s | Remove It', proxy, score)
-                return self.db.zrem(table, proxy)
+                return self.db.zrem(table, proxy)  # 删除
 
     # def get(self, table, start=0, stop=-1):
     #     # 默认获取所有代理
