@@ -3,6 +3,7 @@ from .logger import logger
 
 from multiprocessing import Process
 import os
+import time
 import signal
 
 
@@ -46,12 +47,12 @@ class Api(Process):  # 对外接口
         pass
 
 
-Processes = list()  # 全局子进程列表
-
-
 class Scheduler(object):
     def __init__(self):
-        pass
+        self.processes = list()  # 子进程列表
+        #  注册信号接受函数 子进程继承主进程的信号处理方法
+        signal.signal(signal.SIGINT, self.term)  # Ctrl+C / kill -9 pid
+        signal.signal(signal.SIGTERM, self.term)  # kill -15 pid
 
     def run(self):
         logger.info("Start Running Proxy Pool")
@@ -85,7 +86,7 @@ class Scheduler(object):
             Processes.append(papi)
 
         try:
-            for p in Processes:
+            for p in self.processes:
                 p.join()  # 阻塞任务
         except Exception as e:
             logger.error(str(e))
@@ -93,4 +94,4 @@ class Scheduler(object):
     def term(self, sig, frame):  # 信号处理函数
         logger.info(
             f"Current pid is {os.getpid()}, group id is {os.getpgrp()}")
-        os.killpg(os.getpgid(os.getpid()), signal.SIGKILL)
+        os.killpg(os.getpgid(os.getpid()), signal.SIGKILL)  # 结束进程组

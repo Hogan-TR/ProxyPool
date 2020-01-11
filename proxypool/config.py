@@ -1,7 +1,7 @@
 # 开启选项
-SWITCH_CRA = False
-SWITCH_VAL = False
-SWITCH_API = False
+SWITCH_CRA = True
+SWITCH_VAL = True
+SWITCH_API = True
 
 # Redis数据库
 REDIS_HOST = "127.0.0.1"
