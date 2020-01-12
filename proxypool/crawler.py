@@ -2,8 +2,10 @@ from .config import *
 from .logger import logger
 from .db import myredis
 
-from fake_useragent import UserAgent
+from lxml import etree
 import requests
+import random
+import time
 
 
 class ProxyMetaclass(type):
@@ -38,39 +40,43 @@ class Crawler(object, metaclass=ProxyMetaclass):
                     proxies.append(proxy)
             except:
                 logger.error(
-                    f'Meet error when fetching proxy from {proxyFunc}')
+                    f'Meet error when fetching proxy from {proxyFunc}', exc_info=True)
             if proxies:
                 for proxy in proxies:
                     self.redis.add(CHAOS_REDIS_KEY, proxy)  # 置入混沌池，进行清洗
 
     def srtweb(self, url):
-        ua = UserAgent()
-        headers = {'User-Agent': ua.random}  # 伪造请求头
+        """网页请求模块
+
+        Args:
+            url: 待请求网址
+
+        Returns:
+            1. 结构树化网页
+            2. 异常无返回(None)
+        """
+        headers = {'User-Agent': random.choice(UserAgent)}  # 伪造请求头
         try:
-            html = requests.get(url)
+            html = requests.get(url, headers=headers)
             html.raise_for_status()
-            html = etree.HTML(html.text)
+            return etree.HTML(html.text)
         except Exception:
             logger.error('Fail To Get Proxies', exc_info=True)
-            flag = False  # 标记为异常
+            # 异常无返回(None)
 
     def crawl_Xila(self):
         start_url = "http://www.xiladaili.com/gaoni/{}/"
-        flag = True  # Use to: 判断获取网页是否异常
 
         for page in range(1, CRAWL_PAGES+1):
-            try:
-                html = requests.get(start_url.format(page))
-                html.raise_for_status()
-                html = etree.HTML(html.text)
-            except Exception:
-                logger.error('Fail To Get Proxies', exc_info=True)
-                flag = False  # 标记为异常
+            html = self.srtweb(start_url.format(page))
 
-            if flag:
+            if html:  # 正确获得返回数据
                 for x in range(1, 50 + 1):
                     Tpproxy = html.xpath(
                         f"//tbody/tr[{x}]/td[position()<3]/text()")
                     if PROXY_TYPE in [proxy.replace('代理', '') for proxy in Tpproxy[1].split(',')]:
                         yield Tpproxy[0]
-            time.sleep(1)
+            time.sleep(random.uniform(1, 3))
+
+
+crawler = Crawler()

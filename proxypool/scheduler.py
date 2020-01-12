@@ -1,5 +1,6 @@
 from .config import *
 from .logger import logger
+from .crawler import crawler
 
 from multiprocessing import Process
 import os
@@ -12,7 +13,10 @@ class Crawler(Process):  # 代理抓取
         super(Crawler, self).__init__()
 
     def run(self):
-        pass
+        while True:
+            logger.info("Start Crawling Proxies")
+            crawler.run()
+            time.sleep(20)  # TODO 进程间通信，无休
 
 
 class Validator_Chaos(Process):  # 混沌清洗
@@ -60,30 +64,30 @@ class Scheduler(object):
             pcrawl = Crawler()
             pcrawl.daemon = True  # 设为守护进程
             pcrawl.start()  # 启动子进程
-            Processes.append(pcrawl)  # 将子进程加入列表
+            self.processes.append(pcrawl)  # 将子进程加入列表
 
         if SWITCH_VAL:  # 过滤
             pvalidate_chaos = Validator_Chaos()
             pvalidate_chaos.daemon = True
             pvalidate_chaos.start()
-            Processes.append(pvalidate_chaos)
+            self.processes.append(pvalidate_chaos)
 
             pvalidate_stable = Validator_Stable()
             pvalidate_stable.daemon = True
             pvalidate_stable.start()
-            Processes.append(pvalidate_stable)
+            self.processes.append(pvalidate_stable)
 
         if SWITCH_CRA and SWITCH_VAL:  # 迁移
             ptransfer = Transfer()
             ptransfer.daemon = True
             ptransfer.start()
-            Processes.append(ptransfer)
+            self.processes.append(ptransfer)
 
         if SWITCH_API:  # 接口
             papi = Api()
             papi.daemon = True
             papi.start()
-            Processes.append(papi)
+            self.processes.append(papi)
 
         try:
             for p in self.processes:
