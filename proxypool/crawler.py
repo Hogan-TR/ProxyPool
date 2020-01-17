@@ -70,7 +70,7 @@ class Crawler(object, metaclass=ProxyMetaclass):
         for page in range(1, CRAWL_PAGES+1):
             html = self.srtweb(start_url.format(page))
 
-            if html:  # 正确获得返回数据
+            if html is not None:  # 正确获得返回数据
                 for x in range(1, 50 + 1):
                     Tpproxy = html.xpath(
                         f"//tbody/tr[{x}]/td[position()<3]/text()")

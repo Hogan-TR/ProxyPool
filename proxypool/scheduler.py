@@ -8,49 +8,6 @@ import time
 import signal
 
 
-class Crawler(Process):  # 代理抓取
-    def __init__(self):
-        super(Crawler, self).__init__()
-
-    def run(self):
-        while True:
-            logger.info("Start Crawling Proxies")
-            crawler.run()
-            time.sleep(20)  # TODO 进程间通信，无休
-
-
-class Validator_Chaos(Process):  # 混沌清洗
-    def __init__(self):
-        super(Validator_Chaos, self).__init__()
-
-    def run(self):
-        pass
-
-
-class Validator_Stable(Process):  # 稳定清洗
-    def __init__(self):
-        super(Validator_Stable, self).__init__()
-
-    def run(self):
-        pass
-
-
-class Transfer(Process):  # 数据迁移
-    def __init__(self):
-        super(Transfer, self).__init__()
-
-    def run(self):
-        pass
-
-
-class Api(Process):  # 对外接口
-    def __init__(self):
-        super(Api, self).__init__()
-
-    def run(self):
-        pass
-
-
 class Scheduler(object):
     def __init__(self):
         self.processes = list()  # 子进程列表
@@ -61,31 +18,32 @@ class Scheduler(object):
     def run(self):
         logger.info("Start Running Proxy Pool")
         if SWITCH_CRA:  # 抓取
-            pcrawl = Crawler()
-            pcrawl.daemon = True  # 设为守护进程
+            pcrawl = Process(target=self.sch_crawl, daemon=True)  # 设为守护进程
             pcrawl.start()  # 启动子进程
             self.processes.append(pcrawl)  # 将子进程加入列表
 
         if SWITCH_VAL:  # 过滤
-            pvalidate_chaos = Validator_Chaos()
-            pvalidate_chaos.daemon = True
+            pvalidate_chaos = Process(
+                target=self.sch_validate_chaos,
+                daemon=True
+            )
             pvalidate_chaos.start()
             self.processes.append(pvalidate_chaos)
 
-            pvalidate_stable = Validator_Stable()
-            pvalidate_stable.daemon = True
+            pvalidate_stable = Process(
+                target=self.sch_validate_stable,
+                daemon=True
+            )
             pvalidate_stable.start()
             self.processes.append(pvalidate_stable)
 
         if SWITCH_CRA and SWITCH_VAL:  # 迁移
-            ptransfer = Transfer()
-            ptransfer.daemon = True
+            ptransfer = Process(target=self.sch_transfer, daemon=True)
             ptransfer.start()
             self.processes.append(ptransfer)
 
         if SWITCH_API:  # 接口
-            papi = Api()
-            papi.daemon = True
+            papi = Process(target=self.sch_api, daemon=True)
             papi.start()
             self.processes.append(papi)
 
@@ -97,5 +55,23 @@ class Scheduler(object):
 
     def term(self, sig, frame):  # 信号处理函数
         logger.info(
-            f"Current pid is {os.getpid()}, group id is {os.getpgrp()}")
+            f"Received SIGINT, shutting down gracefully. Current pid is {os.getpid()}, group id is {os.getpgrp()}")
         os.killpg(os.getpgid(os.getpid()), signal.SIGKILL)  # 结束进程组
+
+    def sch_crawl(self):
+        while True:
+            logger.info("Start Crawling Proxies")
+            crawler.run()
+            time.sleep(5)  # TODO 进程间通信，无休
+
+    def sch_validate_chaos(self):
+        pass
+
+    def sch_validate_stable(self):
+        pass
+
+    def sch_transfer(self):
+        pass
+
+    def sch_api(self):
+        pass
