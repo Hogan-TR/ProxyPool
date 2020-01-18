@@ -1,6 +1,8 @@
 from .config import *
 from .logger import logger
 from .crawler import crawler
+from .transfer import transfer
+
 
 from multiprocessing import Process
 import os
@@ -71,7 +73,10 @@ class Scheduler(object):
         pass
 
     def sch_transfer(self):
-        pass
+        while True:
+            logger.info("Start Transfering Proxies: chaos -> stable")
+            transfer.run()
+            time.sleep(1200)
 
     def sch_api(self):
         pass

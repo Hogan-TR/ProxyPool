@@ -14,6 +14,8 @@ STABLE_REDIS_KEY = "stable"
 INITIAL_SCORE = 5  # 初始分
 MIX_SCORE = 7  # 稳定池最小允许分
 MAX_SCORE = 10  # 最大可及分
+SATISFY_SCORE = 8  # 迁移条件
+
 
 # 抓取配置
 CRAWL_PAGES = 3  # 抓取数据页
