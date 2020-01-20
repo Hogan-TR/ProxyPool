@@ -1,6 +1,7 @@
 from .config import *
 from .logger import logger
 from .crawler import crawler
+from .validator import chaos_validator, stable_validator
 from .transfer import transfer
 
 
@@ -67,10 +68,16 @@ class Scheduler(object):
             time.sleep(5)  # TODO 进程间通信，无休
 
     def sch_validate_chaos(self):
-        pass
+        while True:
+            logger.info("Start Validating Proxies(chaos)")
+            chaos_validator.run()
+            time.sleep(20)
 
     def sch_validate_stable(self):
-        pass
+        while True:
+            logger.info("Start Validating Proxies(stable)")
+            stable_validator.run()
+            time.sleep(20)
 
     def sch_transfer(self):
         while True:

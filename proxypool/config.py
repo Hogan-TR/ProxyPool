@@ -1,6 +1,6 @@
 # 开启选项
-SWITCH_CRA = True
-SWITCH_VAL = False
+SWITCH_CRA = False
+SWITCH_VAL = True
 SWITCH_API = False
 
 # Redis数据库
@@ -16,6 +16,10 @@ MIX_SCORE = 7  # 稳定池最小允许分
 MAX_SCORE = 10  # 最大可及分
 SATISFY_SCORE = 8  # 迁移条件
 
+# 校验机制
+IP_QUERY_URL = 'http://httpbin.org/ip'  # 检测原始IP
+# IP_QUERY_URL = 'http://icanhazip.com/'# 备用 / (http://ip.360.cn/IPShare/info)
+VALIDATE_SIZE = 30  # 单次校验代理数
 
 # 抓取配置
 CRAWL_PAGES = 3  # 抓取数据页
