@@ -3,6 +3,7 @@ from .logger import logger
 from .db import myredis
 
 import requests
+import asyncio
 
 
 class Validator(object):
@@ -20,6 +21,15 @@ class Validator(object):
         except:
             logger.error('Fail To Get Native IP', exc_info=True)
 
+    async def judge_tasks(self, proxies_queue):
+        while not proxies_queue.empty():
+            test_proxy = await proxies_queue.get()
+            try:
+                logger.info(test_proxy)
+                await asyncio.sleep(5)
+            except Exception as e:
+                logger.error('Error for {}'.format(test_proxy), exc_info=True)
+
     def run(self):
         try:
             count = self.redis.count(self.table)
@@ -27,6 +37,8 @@ class Validator(object):
 
             nativeip = self.native_ip()
             logger.info('Current Native IP: {}'.format(nativeip))
+            
+            loop = asyncio.get_event_loop()
 
             for x in range(0, count, VALIDATE_SIZE):
                 # Ensure validate all proxies
@@ -40,11 +52,18 @@ class Validator(object):
                     stop
                 )
 
-                from pprint import pprint
-                pprint(proxies_list)
+                proxies_queue = asyncio.Queue()
+                [proxies_queue.put_nowait(proxy) for proxy in proxies_list]
+                
+                tasks = [self.judge_tasks(proxies_queue)
+                         for t in range(stop - x)]
+                loop.run_until_complete(asyncio.wait(tasks))
+                
 
         except:
-            pass
+            logger.error('No', exc_info=True)
+        finally:
+            loop.close()
 
 
 chaos_validator = Validator(CHAOS_REDIS_KEY)

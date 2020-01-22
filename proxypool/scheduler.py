@@ -71,13 +71,13 @@ class Scheduler(object):
         while True:
             logger.info("Start Validating Proxies(chaos)")
             chaos_validator.run()
-            time.sleep(20)
+            time.sleep(200000)
 
     def sch_validate_stable(self):
         while True:
             logger.info("Start Validating Proxies(stable)")
             stable_validator.run()
-            time.sleep(20)
+            time.sleep(200000)
 
     def sch_transfer(self):
         while True:
