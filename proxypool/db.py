@@ -84,7 +84,7 @@ class RedisClient(object):
 
         # 稳定代理数据池与临时数据池采取不同处理
         if table == STABLE_REDIS_KEY:
-            if score and score > INITIAL_SCORE:
+            if score and score > MIX_SCORE:
                 return self.db.zincrby(table, -1, proxy)  # 减分
             else:
                 return self.db.zrem(table, proxy)  # 删除

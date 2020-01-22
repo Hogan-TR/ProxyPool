@@ -13,7 +13,6 @@ Jinja2==2.10.3
 lxml==4.4.2
 MarkupSafe==1.1.1
 multidict==4.7.4
-pkg-resources==0.0.0
 pycodestyle==2.5.0
 redis==3.3.11
 requests==2.22.0
