@@ -94,11 +94,11 @@ class RedisClient(object):
             else:
                 return self.db.zrem(table, proxy)  # 删除
 
-    def get(self, table, start=0, stop=-1):
+    def get(self, table, start=0, stop=-1, isS=False):
         # 默认获取所有代理
         # 若获取单个代理：start = 0, stop = 0
         # free获取代理：start = value, stop = value
-        result = self.db.zrevrange(table, start, stop)
+        result = self.db.zrevrange(table, start, stop, isS)
         if result:
             return result
 

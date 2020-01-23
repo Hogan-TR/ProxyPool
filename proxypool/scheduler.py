@@ -3,6 +3,7 @@ from .logger import logger
 from .crawler import crawler
 from .validator import chaos_validator, stable_validator
 from .transfer import transfer
+from .api import app
 
 
 from multiprocessing import Process
@@ -86,4 +87,5 @@ class Scheduler(object):
             time.sleep(1200)
 
     def sch_api(self):
-        pass
+        logger.info("Start Loading API")
+        app.run(API_HOST, API_PORT)

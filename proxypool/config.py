@@ -1,7 +1,7 @@
 # 开启选项
 SWITCH_CRA = False
-SWITCH_VAL = True
-SWITCH_API = False
+SWITCH_VAL = False
+SWITCH_API = True
 
 # Redis数据库
 REDIS_HOST = "127.0.0.1"
@@ -72,3 +72,7 @@ UserAgent = [
     "Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US) AppleWebKit/525.19 (KHTML, like Gecko) Chrome/1.0.154.55 Safari/525.19",
     "Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US) AppleWebKit/525.13 (KHTML, like Gecko) Chrome/0.2.149.27 Safari/525.13",
 ]
+
+# api配置
+API_HOST = '0.0.0.0'
+API_PORT = '8888'
