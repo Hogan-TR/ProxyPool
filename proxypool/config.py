@@ -1,6 +1,6 @@
-# 开启选项
-SWITCH_CRA = False
-SWITCH_VAL = False
+# 开启选项 仅调试用 正常运行必须完全开启
+SWITCH_CRA = True
+SWITCH_VAL = True
 SWITCH_API = True
 
 # Redis数据库
