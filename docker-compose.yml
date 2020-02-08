@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+    db:
+        image: redis
+        restart: always
+        command: --appendonly yes
+        ports:
+            - "6379:6379"
+        volumes:
+            - ./redis-data:/data
+
+    main:
+        build: .
+        command: python run.py
+        volumes:
+            - .:/code
+        ports:
+            - "5000:8888"
+        links:
+            - db
