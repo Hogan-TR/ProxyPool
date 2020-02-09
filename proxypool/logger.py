@@ -20,8 +20,3 @@ def set_log():
 
 
 logger = set_log()
-
-logger.debug("debug")
-logger.info("info")
-logger.warning("warn")
-logger.error("error")
