@@ -1,4 +1,4 @@
-from .config import *
+from .config import SWITCH_CRA, SWITCH_VAL, SWITCH_API, API_HOST, API_PORT
 from .logger import logger
 from .crawler import crawler
 from .validator import chaos_validator, stable_validator

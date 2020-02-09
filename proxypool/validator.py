@@ -1,4 +1,4 @@
-from .config import *
+from .config import IP_QUERY_URL, CHAOS_REDIS_KEY, STABLE_REDIS_KEY, VALIDATE_SIZE
 from .logger import logger
 from .db import myredis
 

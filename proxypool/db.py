@@ -1,4 +1,4 @@
-from .config import *
+from .config import REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, STABLE_REDIS_KEY, INITIAL_SCORE, MAX_SCORE, MIX_SCORE, MIN_SCORE
 from .logger import logger
 import redis
 import re

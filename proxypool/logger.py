@@ -1,3 +1,4 @@
+from .config import LOG_LEVEL
 import logging
 import sys
 
@@ -7,7 +8,7 @@ def set_log():
     创建日志实例
     """
     logger = logging.getLogger(__name__)
-    logger.setLevel(level=logging.WARNING)  # 日志等级
+    logger.setLevel(level=LOG_LEVEL)  # 日志等级
 
     # Handler
     stream_handler = logging.StreamHandler(sys.stdout)
@@ -19,3 +20,8 @@ def set_log():
 
 
 logger = set_log()
+
+logger.debug("debug")
+logger.info("info")
+logger.warning("warn")
+logger.error("error")

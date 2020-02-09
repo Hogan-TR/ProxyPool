@@ -1,4 +1,4 @@
-from .config import *
+from .config import UserAgent, CRAWL_PAGES, PROXY_TYPE, CHAOS_REDIS_KEY
 from .logger import logger
 from .db import myredis
 

@@ -1,4 +1,4 @@
-from .config import *
+from .config import CHAOS_REDIS_KEY, STABLE_REDIS_KEY, SATISFY_SCORE
 from .logger import logger
 from .db import myredis
 
