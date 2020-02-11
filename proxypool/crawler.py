@@ -78,5 +78,64 @@ class Crawler(object, metaclass=ProxyMetaclass):
                         yield Tpproxy[0]
             time.sleep(random.uniform(1, 3))
 
+    def crawl_Xici(self):
+        start_url = "https://www.xicidaili.com/nn/{}"
+
+        for page in range(1, CRAWL_PAGES+1):
+            html = self.srtweb(start_url.format(page))
+
+            if html is not None:
+                for x in range(1, 100+1):
+                    Tpproxy = html.xpath(
+                        f"//tr[@class][{x}]/td[position()=2 or position()=3 or position()=6]/text()")
+                    if PROXY_TYPE == Tpproxy[2]:
+                        proxy = Tpproxy[0] + ':' + Tpproxy[1]
+                        yield proxy
+            time.sleep(random.uniform(1, 3))
+
+    def crawl_Kuai(self):
+        start_url = "https://www.kuaidaili.com/free/inha/{}/"
+
+        for page in range(1, CRAWL_PAGES+1):
+            html = self.srtweb(start_url.format(page))
+
+            if html is not None:
+                for x in range(1, 15+1):
+                    Tpproxy = html.xpath(
+                        f"//tr[{x}]/td[position()=1 or position()=2 or position()=4]/text()")
+                    if PROXY_TYPE == Tpproxy[2]:
+                        proxy = Tpproxy[0] + ':' + Tpproxy[1]
+                        yield proxy
+            time.sleep(random.uniform(1, 3))
+
+    def crawl_yun(self):
+        start_url = "http://www.ip3366.net/free/?stype=1&page={}"
+
+        for page in range(1, CRAWL_PAGES+1):
+            html = self.srtweb(start_url.format(page))
+
+            if html is not None:
+                for x in range(1, 15+1):
+                    Tpproxy = html.xpath(
+                        f"//tr[{x}]/td[position()=1 or position()=2 or position()=4]/text()")
+                    if PROXY_TYPE == Tpproxy[2]:
+                        proxy = Tpproxy[0] + ':' + Tpproxy[1]
+                        yield proxy
+            time.sleep(random.uniform(1, 3))
+
+    def crawl_66(self):
+        start_url = "http://www.66ip.cn/{}.html"
+
+        for page in range(1, CRAWL_PAGES+1):
+            html = self.srtweb(start_url.format(page))
+
+            if html is not None:
+                gData = html.xpath(
+                    '//tr[position()!=1]/td[position()<3]/text()')
+                num = int(len(gData) / 2)
+                for _ in range(num):
+                    yield gData[2*_] + ':' + gData[2*_+1]
+            time.sleep(random.uniform(1, 3))
+
 
 crawler = Crawler()
