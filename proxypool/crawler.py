@@ -137,5 +137,19 @@ class Crawler(object, metaclass=ProxyMetaclass):
                     yield gData[2*_] + ':' + gData[2*_+1]
             time.sleep(random.uniform(1, 3))
 
+    def crawl_nima(self):
+        start_url = "http://www.nimadaili.com/gaoni/{}/"
+
+        for page in range(1, CRAWL_PAGES+1):
+            html = self.srtweb(start_url.format(page))
+
+            if html is not None:  # 正确获得返回数据
+                for x in range(1, 50 + 1):
+                    Tpproxy = html.xpath(
+                        f"//tbody/tr[{x}]/td[position()<3]/text()")
+                    if PROXY_TYPE in [proxy.replace('代理', '') for proxy in Tpproxy[1].split(',')]:
+                        yield Tpproxy[0]
+            time.sleep(random.uniform(1, 3))
+
 
 crawler = Crawler()
