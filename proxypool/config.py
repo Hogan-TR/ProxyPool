@@ -1,7 +1,13 @@
+import os
+
+
 # 开启选项 仅调试用 正常运行必须完全开启
 SWITCH_CRA = True
 SWITCH_VAL = True
 SWITCH_API = True
+
+# 相对根目录
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Redis数据库
 REDIS_HOST = "127.0.0.1"
@@ -77,5 +83,6 @@ UserAgent = [
 API_HOST = '0.0.0.0'
 API_PORT = '8888'
 
-# 日志等级
+# 日志
 LOG_LEVEL = "INFO"
+LOG_FILE = True
