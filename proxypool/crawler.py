@@ -66,6 +66,7 @@ def crawl_Xila(html):
         if PROXY_TYPE in [proxy.replace('代理', '') for proxy in Tpproxy[1].split(',')]:
             yield Tpproxy[0]
 
+
 # @crawler.register("http://www.nimadaili.com/gaoni/{}/")
 # def crawl_nima(html):
 #     for x in range(1, 50 + 1):
@@ -73,6 +74,7 @@ def crawl_Xila(html):
 #             f"//tbody/tr[{x}]/td[position()<3]/text()")
 #         if PROXY_TYPE in [proxy.replace('代理', '') for proxy in Tpproxy[1].split(',')]:
 #             yield Tpproxy[0]
+
 
 # @crawler.register("https://www.xicidaili.com/nn/{}")
 # def crawl_Xici(html):
