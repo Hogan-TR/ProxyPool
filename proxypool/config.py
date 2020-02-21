@@ -6,8 +6,10 @@ SWITCH_CRA = True
 SWITCH_VAL = True
 SWITCH_API = True
 
+
 # 相对根目录
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 # Redis数据库
 REDIS_HOST = "127.0.0.1"
@@ -16,6 +18,17 @@ REDIS_PASSWORD = None
 CHAOS_REDIS_KEY = "chaos"
 STABLE_REDIS_KEY = "stable"
 
+
+# api配置
+API_HOST = '0.0.0.0'
+API_PORT = '8888'
+
+
+# 日志
+LOG_LEVEL = "INFO"
+LOG_FILE = True
+
+
 # 评分机制
 INITIAL_SCORE = 6  # 初始分
 MIN_SCORE = 5  # 混沌池最小允许分
@@ -23,10 +36,12 @@ MIX_SCORE = 7  # 稳定池最小允许分
 MAX_SCORE = 10  # 最大可及分
 SATISFY_SCORE = 8  # 迁移条件
 
+
 # 校验机制
 IP_QUERY_URL = 'http://httpbin.org/ip'  # 检测原始IP
 # IP_QUERY_URL = 'http://icanhazip.com/'# 备用 / (http://ip.360.cn/IPShare/info)
 VALIDATE_SIZE = 50  # 单次校验代理数
+
 
 # 抓取配置
 CRAWL_PAGES = 3  # 抓取数据页
@@ -78,11 +93,3 @@ UserAgent = [
     "Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US) AppleWebKit/525.19 (KHTML, like Gecko) Chrome/1.0.154.55 Safari/525.19",
     "Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US) AppleWebKit/525.13 (KHTML, like Gecko) Chrome/0.2.149.27 Safari/525.13",
 ]
-
-# api配置
-API_HOST = '0.0.0.0'
-API_PORT = '8888'
-
-# 日志
-LOG_LEVEL = "INFO"
-LOG_FILE = True
