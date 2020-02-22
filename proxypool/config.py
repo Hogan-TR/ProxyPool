@@ -21,11 +21,11 @@ STABLE_REDIS_KEY = "stable"
 
 # api配置
 API_HOST = '0.0.0.0'
-API_PORT = '8888'
+API_PORT = '5000'
 
 
 # 日志
-LOG_LEVEL = "INFO"
+LOG_LEVEL = "WARNING"
 LOG_FILE = True
 
 

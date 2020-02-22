@@ -136,3 +136,7 @@ dmypy.json
 # Editor configuration file
 .vscode
 .idea
+
+
+redis-data/appendonly.aof
+logs/*
