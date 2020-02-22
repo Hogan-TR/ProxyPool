@@ -90,7 +90,7 @@
 
 ## 配置
 
-```
+```python
 # .proxypool/config.py
 
 # 开启选项 仅调试用 正常运行必须完全开启
@@ -138,8 +138,8 @@ UserAgent = [         # 伪造请求头
 
 
 # 校验机制
-IP_QUERY_URL = 'http://httpbin.org/ip'  # 校验目标对象
-VALIDATE_SIZE = 50  					# 单次校验代理数
+IP_QUERY_URL = 'http://httpbin.org/ip'   # 校验目标对象
+VALIDATE_SIZE = 50                       # 单次校验代理数
 # IP_QUERY_URL = 'http://icanhazip.com/'
 # IP_QUERY_URL = 'http://ip.360.cn/IPShare/info'
 # 备用检验地址，同时校验方式需随之改变
@@ -158,16 +158,17 @@ VALIDATE_SIZE = 50  					# 单次校验代理数
 crawler = Crawler()  
 
 
-# 传入请求页模板,{}中为工作页数,可在config配置总获取页数 -> CRAWL_PAGES
-@crawler.register("http://www.xiladaili.com/gaoni/{}/")  
-# 形参目前必须为html -> 结构化网页
+@crawler.register("http://www.xiladaili.com/gaoni/{}/")
 def crawl_Xila(html):
-    # 编写数据提取规则
     for x in range(1, 50 + 1):
-        # 此处用xpath解析
         Tpproxy = html.xpath(f"//tbody/tr[{x}]/td[position()<3]/text()")
         if PROXY_TYPE in [proxy.replace('代理', '') for proxy in Tpproxy[1].split(',')]:
-            yield Tpproxy[0]  # 返回为字符串对象 例如: "100.100.100.100:9999"
+            yield Tpproxy[0]
+            
+# 装饰器传入请求页模板,{}中为工作页数,可在config配置总获取页数 -> CRAWL_PAGES
+# 被装饰函数形参目前必须为 "html" => 经处理的结构化网页
+# 此示例中用 xpath 来提取数据
+# 生成器每次返回字符串对象 如: "100.100.100.100:9999"
 ```
 
 
@@ -224,8 +225,7 @@ def crawl_Xila(html):
 > {
 >  "proxies": [
 >      "78.46.91.48:1080",
->      "59.56.28.254:80",
->      ...
+>      "59.56.28.254:80"
 >  ]
 > }
 > ```
@@ -246,13 +246,10 @@ def crawl_Xila(html):
 >         [
 >             "59.56.28.254:80",
 >             10.0
->         ],
->         ...
+>         ]
 >     ]
 > }
 > ```
-
-------
 
 **异常处理**
 
