@@ -1,14 +1,14 @@
 # ProxyPool
-一个高可用、易部署、长稳定、易扩展的**IP代理池**。
+🛠一款**异步**清洗、高效抓取、稳定提供有效代理的**IP代理池**。
 
 
 
 ## 特点
 
-- 高可用：改变常规代理池仅对单个数据库进行数据处理的设计，建立两个数据池—— chaos + stable，分别用于数据的原始清理和提供稳定IP代理调用接口，提高鲁棒性，从而有效避免了因新未知数据进入到数据库，导致IP代理质量下降，网页请求失败的可能性
-- 易部署：采用Docker的容器化部署，快速搭建服务，降低了代理池使用的学习成本
-- 长稳定：自由制定分级评分机制，在 config 文件中分别对混沌池、稳定池的初始分、最低允许分、最高可控分，以及迁移条件进行设定，从而在保证代理质量的同时有效控制计算资源占用
-- 易扩展：针对互联网公开代理资源获取规则的时效性问题，在 crawler 模块中可利用提供的请求函数，自行对特定网站进行抓取规则编写，返回代理数据的生成器即可
+- 将混沌池（原始数据）与稳定池（面向用户的优质数据）相**分离**，保证代理池在任意时刻提供代理的高效、可用
+- 采取**差异评分**机制，对不同池制定不同筛选标准，有效淘汰成功率较低的代理
+- 通过 Python 的神奇语法糖，仅需数行代码，即可完成抓取**函数**的自由**注册**
+- 在不同子进程间建立**通信**，确保代理池正常运转的同时，进程能够自主有序运行
 
 
 
@@ -16,9 +16,7 @@
 
 #### Docker部署
 
-1. Docker安装
-
-2. docker-compose 安装（建议采用pip安装方式）
+1. `Docker` + `docker-compose` 安装
 
 3. 下载当前仓库代码到本地
 
@@ -26,23 +24,40 @@
    git clone https://github.com/Hogan-TR/ProxyPool.git
    ```
 
-4. 修改 `./proxypool/config.py` 中的配置
+3. 修改 `./proxypool/config.py` 中的配置
 
    ```python
-   REDIS_HOST = "127.0.0.1"   # 将 REDIS_HOST 的内容替换为当前机器的内网ip
+   # 将 REDIS_HOST 的内容替换为当前机器的内网ip
+   REDIS_HOST = "127.0.0.1"
+   # 若本地有 redis 环境，可将容器 redis 端口更改为6399
+   REDIS_PORT = 6399
    
-   # 其他配置可按需修改
+   # 其他配置默认无需更改
    ```
 
-5. 修改 `docker-compose.yml` 中的配置
+4. 修改 `docker-compose.yml` 中的配置
 
-   > 可修改main中ports的端口映射，从而更改 `api` 的本地调用接口，默认5000端
-
-6. 执行 `docker-compose up` 命令，启动代理池
+   ```python
+   # 可修改 main 中 ports 的端口映射，从而更改 api 的本地调用接口，默认5000端口
+   main:
+       ...
+       ports:
+           - "5000:8888"
+       ...
+       
+   # 若上步修改 reids 端口，则此处需修改端口映射
+   db:
+       ...
+       ports:
+           - "6399:6379"
+       ...
+   ```
+   
+5. 执行 `docker-compose up` ，启动代理池
 
 #### 基于本机环境部署(仅支持类Unix系统)
 
-1. 准备：Python3 + Redis 环境
+1. 准备：`Python3` + `Redis` 环境
 
 2. 下载当前仓库代码到本地
 
@@ -63,10 +78,194 @@
 
 5. 执行 `sudo python run.py` 命令，启动代理池
 
-**注：代理池首次启动后需十分钟左右，进行数据的抓取、清洗，才可开始提供高质代理**
+**注：代理池首次启动后需十分钟左右，进行数据的抓取、清洗，才可开始提供高质代理；本地默认调用➡[接口](http://localhost:5000/ "http://localhost:5000/")**
 
 
 
-## 功能实现图
+## 功能实现
 
-![](diagrame.png)
+![](diagrame.png "Architecture diagram")
+
+
+
+## 配置
+
+```
+# .proxypool/config.py
+
+# 开启选项 仅调试用 正常运行必须完全开启
+SWITCH_CRA = True    # crawler模块
+SWITCH_VAL = True    # validator模块
+SWITCH_API = True    # api模块
+
+
+# 相对根目录
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+# Redis数据库
+REDIS_HOST = "127.0.0.1"      # IP
+REDIS_PORT = 6379             # 端口 若以容器启动，并且本地有redis环境
+REDIS_PASSWORD = None         # 密码
+CHAOS_REDIS_KEY = "chaos"     # 混沌池 —— sorted set | 注：池的key默认无需更改
+STABLE_REDIS_KEY = "stable"   # 稳定池 同上
+
+
+# api配置
+API_HOST = '0.0.0.0'
+API_PORT = '8888'
+
+
+# 日志
+LOG_LEVEL = "INFO"  # 日志等级 实际使用可置为"WARNING"
+LOG_FILE = True     # 是否保存日志文件
+
+
+# 评分机制
+INITIAL_SCORE = 6   # 初始分
+MIN_SCORE = 5       # 混沌池最小允许分
+MIX_SCORE = 7       # 稳定池最小允许分
+MAX_SCORE = 10      # 最大可及分
+SATISFY_SCORE = 8   # 迁移条件
+
+
+# 抓取配置
+CRAWL_PAGES = 3       # 单资源站抓取数据页
+PROXY_TYPE = "HTTP"   # 代理类型
+UserAgent = [         # 伪造请求头
+    ...
+]
+
+
+# 校验机制
+IP_QUERY_URL = 'http://httpbin.org/ip'  # 校验目标对象
+VALIDATE_SIZE = 50  					# 单次校验代理数
+# IP_QUERY_URL = 'http://icanhazip.com/'
+# IP_QUERY_URL = 'http://ip.360.cn/IPShare/info'
+# 备用检验地址，同时校验方式需随之改变
+```
+
+
+
+## 代理扩展
+
+对于网络上不同代理资源的时效性和差异性,此代理池在 `crawler` 模块中通过装饰器 `crawler.register` 实现对抓取函数的**注册**,仅需传入请求地址的格式化字符串,例如 `http://www.xiladaili.com/gaoni/{}/`, 再对每个具体页请求返回的**结构化树** `html` 进行数据提取,最后以**生成器**的方式返回，即可将数据写入数据库进行验证
+
+```python
+# .proxypool/crawler.py
+...
+# 类实例化,并且将抓取函数注册到类的funcs列表中
+crawler = Crawler()  
+
+
+# 传入请求页模板,{}中为工作页数,可在config配置总获取页数 -> CRAWL_PAGES
+@crawler.register("http://www.xiladaili.com/gaoni/{}/")  
+# 形参目前必须为html -> 结构化网页
+def crawl_Xila(html):
+    # 编写数据提取规则
+    for x in range(1, 50 + 1):
+        # 此处用xpath解析
+        Tpproxy = html.xpath(f"//tbody/tr[{x}]/td[position()<3]/text()")
+        if PROXY_TYPE in [proxy.replace('代理', '') for proxy in Tpproxy[1].split(',')]:
+            yield Tpproxy[0]  # 返回为字符串对象 例如: "100.100.100.100:9999"
+```
+
+
+
+## API
+
+**介绍页**
+
+> ```json
+> 请求示例
+> http://localhost:5000/proxypool/
+> 
+> 响应示例
+> {
+>  "count": "Get num of proxies",
+>  "get": "Get one of best proxies randomly",
+>  "get_all": "Get all proxies",
+>  "get_all_ws": "Get all proxies with scores"
+> }
+> ```
+
+**池现存量**
+
+> ```json
+> 请求示例
+> http://localhost:5000/proxypool/count
+> 
+> 响应示例
+> {
+>  "count_chaos": 1569,
+>  "count_stable": 270
+> }
+> ```
+
+**随机最优代理**
+
+> ```json
+> 请求示例
+> http://localhost:5000/proxypool/get
+> 
+> 响应示例
+> {
+>     "proxy": "59.56.28.199:80"
+> }
+> ```
+
+**获取所有代理**
+
+> ```json
+> 请求示例
+> http://localhost:5000/proxypool/get_all
+> 
+> 响应示例
+> {
+>  "proxies": [
+>      "78.46.91.48:1080",
+>      "59.56.28.254:80",
+>      ...
+>  ]
+> }
+> ```
+
+**获取所有代理 with score**
+
+> ```json
+> 请求示例
+> http://localhost:5000/proxypool/get_all_ws
+> 
+> 响应示例
+> {
+>     "proxies": [
+>         [
+>             "78.46.91.48:1080",
+>             10.0
+>         ],
+>         [
+>             "59.56.28.254:80",
+>             10.0
+>         ],
+>         ...
+>     ]
+> }
+> ```
+
+------
+
+**异常处理**
+
+> ```json
+> 响应示例
+> {
+>     "error": "Not found"
+> }
+> ```
+
+
+
+## TODO
+
+- [ ] 单次启动，提供不同类型代理
+- [ ] 激进的进程运行策略，进一步提高效率
