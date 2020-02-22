@@ -42,7 +42,7 @@
    main:
        ...
        ports:
-           - "5000:8888"
+           - "5000:5000"
        ...
        
    # 若上步修改 reids 端口，则此处需修改端口映射
@@ -113,7 +113,7 @@ STABLE_REDIS_KEY = "stable"   # 稳定池 同上
 
 # api配置
 API_HOST = '0.0.0.0'
-API_PORT = '8888'
+API_PORT = '5000'
 
 
 # 日志
