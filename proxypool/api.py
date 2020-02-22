@@ -1,4 +1,4 @@
-from .config import STABLE_REDIS_KEY as table
+from .config import STABLE_REDIS_KEY, CHAOS_REDIS_KEY
 from .logger import logger
 from .db import myredis
 
@@ -19,10 +19,10 @@ def redis_conn():
 @app.route('/proxypool/')
 def index():
     return jsonify(
-        {'count': 'get num of proxies',
-         'get': 'get one of best proxies randomly',
-         'get_all': 'get all proxies',
-         'get_all_ws': 'get all proxies with scores'
+        {'count': 'Get num of proxies',
+         'get': 'Get one of best proxies randomly',
+         'get_all': 'Get all proxies',
+         'get_all_ws': 'Get all proxies with scores'
          }
     )
 
@@ -30,14 +30,15 @@ def index():
 @app.route('/proxypool/count')
 def get_count():
     conn = redis_conn()
-    num = conn.count(table)
-    return jsonify({'count': num})
+    num_1 = conn.count(CHAOS_REDIS_KEY)
+    num_2 = conn.count(STABLE_REDIS_KEY)
+    return jsonify({'count_chaos': num_1, 'count_stable': num_2})
 
 
 @app.route('/proxypool/get')
 def get_proxy():
     conn = redis_conn()
-    proxies = conn.get(table, 0, 5)
+    proxies = conn.get(STABLE_REDIS_KEY, 0, 5)
     if proxies:
         proxy = random.choice(proxies)
         return jsonify({'proxy': proxy})
@@ -48,14 +49,14 @@ def get_proxy():
 @app.route('/proxypool/get_all')
 def get_all_proxies():
     conn = redis_conn()
-    proxies = conn.get(table)
+    proxies = conn.get(STABLE_REDIS_KEY)
     return jsonify({'proxies': proxies})
 
 
 @app.route('/proxypool/get_all_ws')
 def get_all_ws():
     conn = redis_conn()
-    proxies = conn.get(table, isS=True)
+    proxies = conn.get(STABLE_REDIS_KEY, isS=True)
     return jsonify({'proxies': proxies})
 
 
