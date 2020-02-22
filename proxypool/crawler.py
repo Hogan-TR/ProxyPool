@@ -49,9 +49,14 @@ class Crawler(object):
                 logger.info("Crawl -> %s: Page %s", func.__name__, page)
 
                 if html is not None:
-                    for proxy in func(html):
-                        logger.info("Crawl From %s - %s", func.__name__, proxy)
-                        self.redis.add(CHAOS_REDIS_KEY, proxy)
+                    try:
+                        for proxy in func(html):
+                            logger.info("Crawl From %s - %s",
+                                        func.__name__, proxy)
+                            self.redis.add(CHAOS_REDIS_KEY, proxy)
+                    except Exception:
+                        logger.error(
+                            'Encountered an error while parsing the web page', exc_info=True)
                 time.sleep(random.uniform(1, 3))
 
 
