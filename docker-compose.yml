@@ -6,7 +6,7 @@ services:
         restart: always
         command: --appendonly yes
         ports:
-            - "6379:6379"
+            - "6399:6379"
         volumes:
             - ./redis-data:/data
 
