@@ -30,7 +30,7 @@ class Validator(object):
                 raise Exception
             return await response.json()
 
-    async def parse(self, proxy, native_ip, data, res_queue):
+    def parse(self, proxy, native_ip, data, res_queue):
         MaskedIP = data['origin'].split(',')[0]
         if native_ip != MaskedIP:
             res_queue.put_nowait((proxy, True))
@@ -45,7 +45,7 @@ class Validator(object):
             try:
                 async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
                     fetch_get = await self.fetch(session, test_proxy, res_queue)
-                    await self.parse(test_proxy, native_ip, fetch_get, res_queue)
+                    self.parse(test_proxy, native_ip, fetch_get, res_queue)
             except Exception as e:
                 res_queue.put_nowait((test_proxy, False))
                 logger.info('Validating Proxy - {} | ×'.format(test_proxy))
@@ -66,14 +66,15 @@ class Validator(object):
                 start = x + 1
                 stop = min(x + VALIDATE_SIZE, count)
 
-                proxies_list = self.redis.get(  # 从数据库获取proxies
+                proxies_list = self.redis.get(  # 从数据库获取 proxies partly
                     self.table,
                     start,
                     stop
                 )
                 if proxies_list is not None:
                     logger.info('Validating {}-{} Proxies'.format(start, stop))
-                    [proxies_queue.put_nowait(proxy) for proxy in proxies_list]
+                    [proxies_queue.put_nowait(proxy) for proxy in proxies_list] # proxies => queue
+                    # proxies_queue => proxies wait to validate
                     tasks = [self.judge_tasks(proxies_queue, res_queue, nativeip)
                              for t in range(stop - x)]
                     self.loop.run_until_complete(asyncio.wait(tasks))
