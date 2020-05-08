@@ -11,7 +11,7 @@ class Validator(object):
     def __init__(self, table):
         self.redis = myredis
         self.table = table
-        self.loop = asyncio.get_event_loop()
+        self.res_list = []
 
     def native_ip(self):
         # 获取本地ip，用于比对，测试代理的匿名性
@@ -23,71 +23,77 @@ class Validator(object):
         except:
             logger.error('Fail To Get Native IP', exc_info=True)
 
-    async def fetch(self, session, proxy, res_queue) -> dict:
+    async def fetch(self, session, proxy) -> dict:
         async with session.get(IP_QUERY_URL, proxy='http://{}'.format(proxy), timeout=30) as response:
             status_code = response.status
             if status_code != 200:  # 第一层 - 检查状态码
                 raise Exception
             return await response.json()
 
-    def parse(self, proxy, native_ip, data, res_queue):
+    def parse(self, proxy, native_ip, data):
         MaskedIP = data['origin'].split(',')[0]
         if native_ip != MaskedIP:
-            res_queue.put_nowait((proxy, True))
-            logger.info('Validating Proxy - {} | √'.format(proxy))
+            return True
         else:
-            res_queue.put_nowait((proxy, False))
-            logger.info('Validating Proxy - {} | ×'.format(proxy))
+            return False
 
-    async def judge_tasks(self, proxies_queue, res_queue, native_ip):
-        while not proxies_queue.empty():
-            test_proxy = await proxies_queue.get()
-            try:
-                async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
-                    fetch_get = await self.fetch(session, test_proxy, res_queue)
-                    self.parse(test_proxy, native_ip, fetch_get, res_queue)
-            except Exception as e:
-                res_queue.put_nowait((test_proxy, False))
-                logger.info('Validating Proxy - {} | ×'.format(test_proxy))
+    async def judge_task(self, proxy, native_ip):
+        try:
+            async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
+                fetch_get = await self.fetch(session, proxy)
+                if self.parse(proxy, native_ip, fetch_get):
+                    logger.info('Validating Proxy - {} | √'.format(proxy))
+                    return proxy, True
+                else:
+                    logger.info('Validating Proxy - {} | ×'.format(proxy))
+                    return proxy, False
+        except Exception:  # incorrect status_code or timeout
+            logger.info('Validating Proxy - {} | ×'.format(proxy))
+            return proxy, False
+
+    async def gather(self, *tasks):
+        sub_res = await asyncio.gather(*tasks)
+        # just put into global list, refresh redis-data lastly
+        self.res_list.extend(sub_res)
+        logger.info(sub_res)
 
     def run(self):
         try:
             count = self.redis.count(self.table)
             logger.info('Current Number of Proxies: {}'.format(count))
 
+            # TODO
+            if count == 0:
+                pass  # end this loop
+
+            # proxies_list => [] that contain all proxies
+            proxies_list = self.redis.get(self.table)
+            # grouping proxies list => [[], [], ...]
+            proxies_group = [proxies_list[m:m+VALIDATE_SIZE]
+                             for m in range(0, count, VALIDATE_SIZE)]
+
             nativeip = self.native_ip()
             logger.info('Current Native IP: {}'.format(nativeip))
 
-            proxies_queue = asyncio.Queue()  # 待办队列
-            res_queue = asyncio.Queue()  # 结果队列
+            for index, sub_proxies_list in enumerate(proxies_group):
+                begin, end = index * VALIDATE_SIZE + 1, index * \
+                    VALIDATE_SIZE + len(sub_proxies_list)
+                logger.info('Validating {}-{} Proxies'.format(begin, end))
 
-            for x in range(0, count, VALIDATE_SIZE):
-                # Ensure validate all proxies
-                start = x + 1
-                stop = min(x + VALIDATE_SIZE, count)
+                # build *aws
+                proxies_tasks = [self.judge_task(proxy, nativeip)
+                                 for proxy in sub_proxies_list]
+                asyncio.run(self.gather(*proxies_tasks))
 
-                proxies_list = self.redis.get(  # 从数据库获取 proxies partly
-                    self.table,
-                    start,
-                    stop
-                )
-                if proxies_list is not None:
-                    logger.info('Validating {}-{} Proxies'.format(start, stop))
-                    [proxies_queue.put_nowait(proxy) for proxy in proxies_list] # proxies => queue
-                    # proxies_queue => proxies wait to validate
-                    tasks = [self.judge_tasks(proxies_queue, res_queue, nativeip)
-                             for t in range(stop - x)]
-                    self.loop.run_until_complete(asyncio.wait(tasks))
-
-            while not res_queue.empty():
-                proxy, res = res_queue.get_nowait()
+            # all validated and refresh redis-data lastly
+            for proxy, res in self.res_list:
                 if res:
                     self.redis.increase(self.table, proxy)
                 else:
                     self.redis.decrease(self.table, proxy)
 
         except:
-            logger.error('Unknown Error', exc_info=True)
+            logger.error('Unkown Error', exc_info=True)
 
 
 chaos_validator = Validator(CHAOS_REDIS_KEY)
