@@ -23,39 +23,25 @@ class Validator(object):
         except:
             logger.error('Fail To Get Native IP', exc_info=True)
 
-    async def fetch(self, session, proxy) -> dict:
-        async with session.get(IP_QUERY_URL, proxy='http://{}'.format(proxy), timeout=30) as response:
-            status_code = response.status
-            if status_code != 200:  # 第一层 - 检查状态码
-                raise Exception
-            return await response.json()
-
-    def parse(self, proxy, native_ip, data):
-        MaskedIP = data['origin'].split(',')[0]
-        if native_ip != MaskedIP:
-            return True
-        else:
-            return False
-
     async def judge_task(self, proxy, native_ip):
-        try:
-            async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
-                fetch_get = await self.fetch(session, proxy)
-                if self.parse(proxy, native_ip, fetch_get):
-                    logger.info('Validating Proxy - {} | √'.format(proxy))
+        async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
+            try:
+                async with session.get(IP_QUERY_URL, proxy='http://{}'.format(proxy), timeout=30) as response:
+                    status_code = response.status
+                    data = await response.json()
+                    masked_ip = data['origin'].split(',')[0]
+                    if masked_ip == native_ip or status_code != 200:
+                        raise Exception
+                    logger.info('Validating Proxy - {:<21} | √'.format(proxy))
                     return proxy, True
-                else:
-                    logger.info('Validating Proxy - {} | ×'.format(proxy))
-                    return proxy, False
-        except Exception:  # incorrect status_code or timeout
-            logger.info('Validating Proxy - {} | ×'.format(proxy))
-            return proxy, False
+            except Exception:
+                logger.info('Validating Proxy - {:<21} | ×'.format(proxy))
+                return proxy, False
 
     async def gather(self, *tasks):
         sub_res = await asyncio.gather(*tasks)
         # just put into global list, refresh redis-data lastly
         self.res_list.extend(sub_res)
-        logger.info(sub_res)
 
     def run(self):
         try:
