@@ -34,7 +34,7 @@ class Validator(object):
                         raise Exception
                     logger.info('Validating Proxy - {:<21} | √'.format(proxy))
                     return proxy, True
-            except Exception:
+            except Exception: # catch problems like: Transparent Proxy, Timeout, Request Failed
                 logger.info('Validating Proxy - {:<21} | ×'.format(proxy))
                 return proxy, False
 
@@ -44,7 +44,7 @@ class Validator(object):
         self.res_list.extend(sub_res)
 
     def run(self):
-        try:
+        try:# TODO too long try...except...
             count = self.redis.count(self.table)
             logger.info('Current Number of Proxies: {}'.format(count))
 
