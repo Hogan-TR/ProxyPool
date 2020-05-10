@@ -12,7 +12,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # Redis数据库
-REDIS_HOST = "192.168.0.100"
+REDIS_HOST = "127.0.0.1"
 REDIS_PORT = 6399
 REDIS_PASSWORD = None
 CHAOS_REDIS_KEY = "chaos"
