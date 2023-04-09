@@ -63,13 +63,23 @@ class Crawler(object):
 crawler = Crawler()
 
 
-@crawler.register("http://www.xiladaili.com/gaoni/{}/")
-def crawl_Xila(html):
-    for x in range(1, 50 + 1):
+@crawler.register("https://www.kuaidaili.com/free/inha/{}/")
+def crawl_Kuai(html):
+    for x in range(1, 15+1):
         Tpproxy = html.xpath(
-            f"//tbody/tr[{x}]/td[position()<3]/text()")
-        if PROXY_TYPE in [proxy.replace('代理', '') for proxy in Tpproxy[1].split(',')]:
-            yield Tpproxy[0]
+            f"//tr[{x}]/td[position()=1 or position()=2 or position()=4]/text()")
+        if PROXY_TYPE == Tpproxy[2]:
+            proxy = Tpproxy[0] + ':' + Tpproxy[1]
+            yield proxy
+
+
+# @crawler.register("http://www.xiladaili.com/gaoni/{}/")
+# def crawl_Xila(html):
+#     for x in range(1, 50 + 1):
+#         Tpproxy = html.xpath(
+#             f"//tbody/tr[{x}]/td[position()<3]/text()")
+#         if PROXY_TYPE in [proxy.replace('代理', '') for proxy in Tpproxy[1].split(',')]:
+#             yield Tpproxy[0]
 
 
 # @crawler.register("http://www.nimadaili.com/gaoni/{}/")
@@ -86,16 +96,6 @@ def crawl_Xila(html):
 #     for x in range(1, 100+1):
 #         Tpproxy = html.xpath(
 #             f"//tr[@class][{x}]/td[position()=2 or position()=3 or position()=6]/text()")
-#         if PROXY_TYPE == Tpproxy[2]:
-#             proxy = Tpproxy[0] + ':' + Tpproxy[1]
-#             yield proxy
-
-
-# @crawler.register("https://www.kuaidaili.com/free/inha/{}/")
-# def crawl_Kuai(html):
-#     for x in range(1, 15+1):
-#         Tpproxy = html.xpath(
-#             f"//tr[{x}]/td[position()=1 or position()=2 or position()=4]/text()")
 #         if PROXY_TYPE == Tpproxy[2]:
 #             proxy = Tpproxy[0] + ':' + Tpproxy[1]
 #             yield proxy
